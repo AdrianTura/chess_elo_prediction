@@ -114,7 +114,7 @@ def create_dataset():
     
     return x,y
 
-def create_multi_shot_dataset():
+def create_multi_shot_dataset(final_pred):
     games = read_games()
     stockfish = read_stockfish()
     
@@ -150,14 +150,20 @@ def create_multi_shot_dataset():
         first_shot_features = get_features_from_game_single(result, cp_loss)
 
         second_shot_features = get_features_from_game_both(result, cp_loss)
-        second_shot_features.append(avg_rating + random.randint(5,50))
+
+        #second_shot_features.append(avg_rating + random.randint(5,50))
 
         if not(second_shot_features == 0 or first_shot_features == 0):
             first_x.append(first_shot_features)
             first_y.append(avg_rating)
 
             second_x.append(second_shot_features)
-            second_y.append([white, black])
+            if final_pred == "ratings":
+                second_y.append([white, black])
+            elif final_pred == "diff":
+                second_y.append(abs(white-black))
+            else:
+                raise('Not implemented.')
             
 
     train_ratio = 0.85
@@ -184,7 +190,7 @@ def read_from_lichess(str_analysis):
     
     return evals
 
-def read_test_data():
+def read_test_data(type):
     with open('data/test.pgn', 'r') as file:
         lines = file.readlines()
 
@@ -197,7 +203,12 @@ def read_test_data():
 
         cp_loss = read_from_lichess(lines[1])
 
-        features = get_features_from_game_both(result, cp_loss)
+        if type == 'single':
+            features = get_features_from_game_both(result, cp_loss)
+        elif type == 'multi':
+            features = get_features_from_game_single(result, cp_loss)
+        else:
+            raise('Not implemented.')
     return features
 
 read_from_lichess("1. d4 { [%eval 0.0] } 1... Nf6 { [%eval 0.23] } 2. c4 { [%eval 0.29] } 2... e6 { [%eval 0.23] } 3. Nc3 { [%eval 0.05] } 3... Bb4 { [%eval 0.25] } 4. g3 { [%eval 0.0] } { E20 Nimzo-Indian Defense: Romanishin Variation } 4... O-O { [%eval 0.0] } 5. Bg2 { [%eval 0.0] } 5... d5 { [%eval 0.0] } 6. a3 { [%eval -0.23] } 6... Bxc3+ { [%eval -0.12] } 7. bxc3 { [%eval 0.0] } 7... dxc4 { [%eval 0.0] } 8. Nf3 { [%eval -0.29] } 8... c5 { [%eval -0.12] } 9. O-O { [%eval 0.13] } 9... cxd4 { [%eval -0.03] } 10. Qxd4 { [%eval -0.05] } 10... Nc6 { [%eval -0.03] } 11. Qxc4 { [%eval 0.0] } 11... e5 { [%eval -0.13] } 12. Bg5 { [%eval 0.0] } 12... h6 { [%eval 0.04] } 13. Rfd1 { [%eval -0.28] } 13... Be6 { [%eval -0.48] } 14. Rxd8 { [%eval -0.37] } 14... Bxc4 { [%eval -0.37] } 15. Rxa8 { [%eval -0.23] } 15... Rxa8 { [%eval -0.37] } 16. Bxf6 { [%eval -0.52] } 16... gxf6 { [%eval -0.18] } 17. Kf1 { [%eval -0.52] } 17... Rd8 { [%eval -0.47] } 18. Ke1 { [%eval -0.45] } 18... Na5 { [%eval -0.28] } 19. Rd1 { [%eval -0.39] } 19... Rc8 { [%eval -0.54] } 20. Nd2 { [%eval -0.2] } 20... Be6 { [%eval -0.28] } 21. c4 { [%eval -0.57] } 21... Bxc4 { [%eval -0.25] } 22. Nxc4 { [%eval -0.39] } 22... Rxc4 { [%eval -0.36] } 23. Rd8+ { [%eval -0.43] } 23... Kg7 { [%eval -0.42] } 24. Bd5 { [%eval -0.34] } 24... Rc7 { [%eval -0.47] } 25. Ra8 { [%eval -0.61] } 25... a6 { [%eval -0.56] } 26. Rb8 { [%eval -0.39] } 26... f5 { [%eval -0.63] } 27. Re8 { [%eval -0.62] } 27... e4 { [%eval -0.63] } 28. g4?! { (-0.63 → -1.31) Inaccuracy. Rd8 was best. } { [%eval -1.31] } (28. Rd8 Kf6 29. h4 Ke5 30. f4+ exf3 31. exf3 f4 32. g4 b5 33. Be4 Nc4 34. Rd5+ Kf6) 28... Rc5 { [%eval -1.22] } 29. Ba2 { [%eval -1.77] } 29... Nc4?! { (-1.77 → -0.74) Inaccuracy. fxg4 was best. } { [%eval -0.74] } (29... fxg4) 30. a4?! { (-0.74 → -1.80) Inaccuracy. Bxc4 was best. } { [%eval -1.8] } (30. Bxc4 Rxc4) 30... Nd6 { [%eval -1.56] } 31. Re7 { [%eval -3.25] } 31... fxg4? { (-3.25 → -1.84) Mistake. Rc2 was best. } { [%eval -1.84] } (31... Rc2) 32. Rd7 { [%eval -1.94] } 32... e3 { [%eval -1.83] } 33. fxe3 { [%eval -1.86] } 33... Ne4 { [%eval -1.84] } 34. Kf1 { [%eval -1.75] } 34... Rc1+ { [%eval -1.07] } 35. Kg2 { [%eval -1.03] } 35... Rc2 { [%eval -1.15] } 36. Bxf7 { [%eval -1.28] } 36... Rxe2+ { [%eval -1.02] } 37. Kg1 { [%eval -1.1] } 37... Re1+ { [%eval -1.06] } 38. Kg2 { [%eval -0.88] } 38... Re2+ { [%eval -1.24] } 39. Kg1 { [%eval -1.4] } 39... Kf6 { [%eval -1.38] } 40. Bd5 { [%eval -1.46] } 40... Rd2 { [%eval -1.34] } 41. Rf7+ { [%eval -1.46] } 41... Kg6 { [%eval -1.28] } 42. Rd7?? { (-1.28 → -3.55) Blunder. Re7 was best. } { [%eval -3.55] } (42. Re7 Rxd5 43. Rxe4 Kg5 44. h3 gxh3 45. Kh2 Kf6 46. Rh4 h5 47. Rb4 b5 48. e4 Rg5) 42... Ng5 { [%eval -4.13] } 43. Bf7+ { [%eval -4.21] } 43... Kf5? { (-4.21 → -2.46) Mistake. Kf6 was best. } { [%eval -2.46] } (43... Kf6 44. Rxd2 Nf3+ 45. Kg2 Nxd2 46. Bd5 b5 47. axb5 axb5 48. Kg3 Kg5 49. h3 gxh3 50. Kxh3) 44. Rxd2 { [%eval -2.4] } 44... Nf3+ { [%eval -2.79] } 45. Kg2 { [%eval -3.45] } 45... Nxd2 { [%eval -2.55] } 46. a5 { [%eval -2.88] } 46... Ke5 { [%eval -3.1] } 47. Kg3 { [%eval -3.82] } 47... Nf1+ { [%eval -3.9] } 48. Kf2?! { (-3.90 → -5.97) Inaccuracy. Kxg4 was best. } { [%eval -5.97] } (48. Kxg4 Nxh2+) 48... Nxh2 { [%eval -6.44] } 49. e4 { [%eval -6.17] } 49... Kxe4 { [%eval -7.81] } 50. Be6 { [%eval -9.07] } 50... Kf4 { [%eval -9.89] } 51. Bc8 { [%eval -10.4] } 51... Nf3 { [%eval -10.03] } 52. Bxb7 { [%eval -10.85] } 52... Ne5 { [%eval -10.99] } 53. Bxa6 { [%eval -11.53] } 53... Nc6 { [%eval -12.0] } 54. Bb7 { [%eval -11.85] } 54... Nxa5 { [%eval -11.89] } 55. Bd5 { [%eval -12.53] } 55... h5 { [%eval -12.33] } 56. Bf7 { [%eval -14.51] } 56... h4 { [%eval -12.88] } 57. Bd5 { [%eval -13.5] } { Black wins. } 0-1")

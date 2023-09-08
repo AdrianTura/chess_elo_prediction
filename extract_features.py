@@ -84,7 +84,7 @@ def get_features_from_game_single(result, cp_list):
         if i%2 == 0:
             no_moves += 1
 
-    return [no_moves, result] + games.get_features()
+    return [no_moves, result] + games.get_features(no_moves)
 
 def main():
     features = get_features_from_game_both(1,[4,2, 21, 5, 53 ,35, 45, 37, 54, 10, 22, 8 ,48, 30, 17, 13, 35, -12, 31, \
